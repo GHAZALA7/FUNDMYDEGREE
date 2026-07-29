@@ -1,6 +1,24 @@
 export type StudyLevel = 'high_school' | 'diploma' | 'undergraduate' | 'masters' | 'phd'
 export type StudentCategory = 'international' | 'permanent_resident' | 'citizen' | 'all'
 
+export const CANADIAN_PROVINCES = [
+  'Alberta',
+  'British Columbia',
+  'Manitoba',
+  'New Brunswick',
+  'Newfoundland and Labrador',
+  'Northwest Territories',
+  'Nova Scotia',
+  'Nunavut',
+  'Ontario',
+  'Prince Edward Island',
+  'Quebec',
+  'Saskatchewan',
+  'Yukon',
+] as const
+
+export type Province = typeof CANADIAN_PROVINCES[number]
+
 export interface Scholarship {
   id: string
   name: string
@@ -26,6 +44,7 @@ export interface Scholarship {
 export interface ScholarshipFilters {
   level?: StudyLevel | 'all'
   category?: StudentCategory | 'all'
+  province?: Province | 'all'
   page?: number
 }
 

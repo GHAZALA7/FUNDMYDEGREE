@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { StudyLevel, StudentCategory } from '@/lib/types'
+import type { StudyLevel, StudentCategory, Province } from '@/lib/types'
+import { CANADIAN_PROVINCES } from '@/lib/types'
 
 const LEVELS: { value: StudyLevel | 'all'; label: string }[] = [
   { value: 'all', label: 'All Levels' },
@@ -23,6 +24,7 @@ export default function ResultsFilterBar() {
   const searchParams = useSearchParams()
   const currentLevel = (searchParams.get('level') ?? 'all') as StudyLevel | 'all'
   const currentCategory = (searchParams.get('category') ?? 'all') as StudentCategory
+  const currentProvince = (searchParams.get('province') ?? 'all') as Province | 'all'
 
   function update(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -37,7 +39,9 @@ export default function ResultsFilterBar() {
 
   return (
     <div className="sticky top-16 z-40 border-b border-[#1f1f1f] bg-[#0a0a0a]/90 backdrop-blur-md py-3">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 space-y-2">
+
+        {/* Row 1: Level + Category */}
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Level:</span>
           <div className="flex flex-wrap gap-2">
@@ -75,6 +79,31 @@ export default function ResultsFilterBar() {
             ))}
           </div>
         </div>
+
+        {/* Row 2: Province */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#4b5563] whitespace-nowrap">Province:</span>
+          <div className="relative">
+            <select
+              value={currentProvince}
+              onChange={(e) => update('province', e.target.value)}
+              className="appearance-none rounded-full border border-[#2a2a2a] bg-[#1a1a1a] pl-3 pr-8 py-1 text-xs font-medium text-white focus:border-[#f97316]/50 focus:outline-none cursor-pointer"
+              style={{ borderColor: currentProvince !== 'all' ? 'rgba(249,115,22,0.6)' : undefined, color: currentProvince !== 'all' ? '#f97316' : undefined }}
+            >
+              <option value="all">All Provinces & Territories</option>
+              {CANADIAN_PROVINCES.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6b7280] text-xs">▾</div>
+          </div>
+          {currentProvince !== 'all' && (
+            <span className="text-xs text-[#4b5563]">
+              Showing national + {currentProvince} scholarships
+            </span>
+          )}
+        </div>
+
       </div>
     </div>
   )

@@ -4,20 +4,21 @@ import Navbar from '@/components/Navbar'
 import ResultsFilterBar from '@/components/ResultsFilterBar'
 import ScholarshipCard from '@/components/ScholarshipCard'
 import { getScholarships } from '@/lib/scholarships'
-import type { StudyLevel, StudentCategory } from '@/lib/types'
+import type { StudyLevel, StudentCategory, Province } from '@/lib/types'
 import { LEVEL_LABELS, CATEGORY_LABELS } from '@/lib/types'
 
 interface PageProps {
-  searchParams: Promise<{ level?: string; category?: string; page?: string }>
+  searchParams: Promise<{ level?: string; category?: string; province?: string; page?: string }>
 }
 
 async function ScholarshipResults({ searchParams }: PageProps) {
   const params = await searchParams
   const level = (params.level ?? 'all') as StudyLevel | 'all'
   const category = (params.category ?? 'all') as StudentCategory
+  const province = (params.province ?? 'all') as Province | 'all'
   const page = parseInt(params.page ?? '1', 10)
 
-  const { data, count, error } = await getScholarships({ level, category, page })
+  const { data, count, error } = await getScholarships({ level, category, province, page })
 
   if (error) {
     return (
@@ -46,8 +47,20 @@ async function ScholarshipResults({ searchParams }: PageProps) {
     )
   }
 
-  const levelLabel = level !== 'all' ? LEVEL_LABELS[level] : null
-  const categoryLabel = category !== 'all' ? CATEGORY_LABELS[category] : null
+  const activeFilters = [
+    level !== 'all' ? LEVEL_LABELS[level] : null,
+    category !== 'all' ? CATEGORY_LABELS[category] : null,
+    province !== 'all' ? province : null,
+  ].filter(Boolean)
+
+  const buildPageUrl = (p: number) => {
+    const q = new URLSearchParams()
+    if (level !== 'all') q.set('level', level)
+    if (category !== 'all') q.set('category', category)
+    if (province !== 'all') q.set('province', province)
+    if (p > 1) q.set('page', String(p))
+    return `/scholarships?${q.toString()}`
+  }
 
   return (
     <div>
@@ -57,10 +70,9 @@ async function ScholarshipResults({ searchParams }: PageProps) {
           <p className="text-2xl font-bold text-white">
             {count} scholarship{count !== 1 ? 's' : ''} found
           </p>
-          {(levelLabel || categoryLabel) && (
+          {activeFilters.length > 0 && (
             <p className="mt-1 text-sm text-[#6b7280]">
-              Filtered by:{' '}
-              {[levelLabel, categoryLabel].filter(Boolean).join(' · ')}
+              Filtered by: {activeFilters.join(' · ')}
             </p>
           )}
         </div>
@@ -92,7 +104,7 @@ async function ScholarshipResults({ searchParams }: PageProps) {
         <div className="mt-8 flex items-center justify-center gap-4">
           {page > 1 && (
             <Link
-              href={`/scholarships?${new URLSearchParams({ ...(level !== 'all' ? { level } : {}), ...(category !== 'all' ? { category } : {}), page: String(page - 1) })}`}
+              href={buildPageUrl(page - 1)}
               className="rounded-lg border border-[#2a2a2a] px-4 py-2 text-sm text-[#9ca3af] hover:border-[#f97316]/40 hover:text-white"
             >
               ← Previous
@@ -103,7 +115,7 @@ async function ScholarshipResults({ searchParams }: PageProps) {
           </span>
           {page < Math.ceil(count / 12) && (
             <Link
-              href={`/scholarships?${new URLSearchParams({ ...(level !== 'all' ? { level } : {}), ...(category !== 'all' ? { category } : {}), page: String(page + 1) })}`}
+              href={buildPageUrl(page + 1)}
               className="rounded-lg border border-[#2a2a2a] px-4 py-2 text-sm text-[#9ca3af] hover:border-[#f97316]/40 hover:text-white"
             >
               Next →

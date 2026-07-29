@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { StudyLevel, StudentCategory } from '@/lib/types'
+import type { StudyLevel, StudentCategory, Province } from '@/lib/types'
+import { CANADIAN_PROVINCES } from '@/lib/types'
 
 const LEVELS: { value: StudyLevel | 'all'; label: string }[] = [
   { value: 'all', label: 'All Levels' },
@@ -23,11 +24,13 @@ export default function FilterSection() {
   const router = useRouter()
   const [level, setLevel] = useState<StudyLevel | 'all'>('all')
   const [category, setCategory] = useState<StudentCategory>('all')
+  const [province, setProvince] = useState<Province | 'all'>('all')
 
   function handleFind() {
     const params = new URLSearchParams()
     if (level !== 'all') params.set('level', level)
     if (category !== 'all') params.set('category', category)
+    if (province !== 'all') params.set('province', province)
     router.push(`/scholarships?${params.toString()}`)
   }
 
@@ -67,6 +70,7 @@ export default function FilterSection() {
 
         {/* filter card */}
         <div className="w-full rounded-2xl border border-[#222222] bg-[#111111] p-6 text-left shadow-2xl">
+
           {/* country row */}
           <div className="mb-5 flex items-center justify-between">
             <span className="text-sm font-medium text-[#6b7280]">Country of Study</span>
@@ -77,6 +81,33 @@ export default function FilterSection() {
                 More coming soon
               </span>
             </div>
+          </div>
+
+          <div className="h-px bg-[#1f1f1f] mb-5" />
+
+          {/* province */}
+          <div className="mb-5">
+            <p className="mb-3 text-sm font-medium text-[#6b7280]">Province / Territory</p>
+            <div className="relative">
+              <select
+                value={province}
+                onChange={(e) => setProvince(e.target.value as Province | 'all')}
+                className="w-full appearance-none rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none cursor-pointer"
+              >
+                <option value="all">All Provinces & Territories</option>
+                {CANADIAN_PROVINCES.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280]">
+                ▾
+              </div>
+            </div>
+            {province !== 'all' && (
+              <p className="mt-2 text-xs text-[#4b5563]">
+                Showing national scholarships + scholarships specific to {province}
+              </p>
+            )}
           </div>
 
           <div className="h-px bg-[#1f1f1f] mb-5" />

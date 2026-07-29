@@ -1,5 +1,5 @@
 import { getSupabase } from './supabase'
-import type { Scholarship, ScholarshipFilters, StudyLevel, StudentCategory } from './types'
+import type { Scholarship, ScholarshipFilters, StudyLevel, StudentCategory, Province } from './types'
 
 const PAGE_SIZE = 12
 
@@ -8,7 +8,7 @@ export async function getScholarships(filters: ScholarshipFilters): Promise<{
   count: number
   error: string | null
 }> {
-  const { level, category, page = 1 } = filters
+  const { level, category, province, page = 1 } = filters
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
@@ -28,6 +28,11 @@ export async function getScholarships(filters: ScholarshipFilters): Promise<{
 
     if (category && category !== 'all') {
       query = query.or(`categories.cs.{"${category}"},categories.cs.{"all"}`)
+    }
+
+    // Province filter: show national scholarships (province IS NULL) + selected province
+    if (province && province !== 'all') {
+      query = query.or(`province.is.null,province.eq.${province}`)
     }
 
     const { data, count, error } = await query
